@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>Web Workers</title>
+
+        <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+        <meta name="author" content="Hakim El Hattab">
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/league.css" id="theme">
+
+        <!-- Code syntax highlighting -->
+        <!-- <link rel="stylesheet" href="lib/css/monokai_sublime.css"> -->
+        <!-- <link rel="stylesheet" href="https://highlightjs.org/static/demo/styles/atom-one-dark.css"> -->
+        <link rel="stylesheet" href="https://highlightjs.org/static/demo/styles/monokai-sublime.css">
+
+
+        <style type="text/css">
+        .reveal{font-size:24px}
+        .txl{text-align:left;display:inline-block}
+        .point{color:#13DAEC}
+        </style>
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+
+        <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+        <div class="reveal">
+            <!-- Any section element inside of this container is displayed as a slide -->
+            <div class="slides">
+                <section>
+                    <img src="img/js.png" alt="" style="max-width:20%">
+                    <h1>Web Workers</h1>
+                    <!-- <h1>Introduction to ECMAScript 6ㆍ2015 and Javascript</h1> -->
+                    <p>2018. 8. 15.</p>
+                    <p>IT 개발2팀 UI파트 - 최경선</p>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Introducing Web Workers</h2>
+                    </section>
+
+                    <section>
+                        <h2>Web Workers</h2>
+
+                        <p>Bring Threading to JavaScript</p>
+
+                        <aside class="notes">
+                            코드 진행에 있어서 작은 실행 흐름 단위를 thread라고 부름. 
+                            thread를 여러개 생성하면 동시에 여러 개의 코드를 병렬로 실행이 가능.
+                            하지만 자바스크립트의 경우에는 thread를 별도로 생성할 수 없으므로 한번에 하나의 코드만 실행함.
+
+                            웹브라우저 웹페이지 로드되어 실행될때 하나의 스레드로 동작
+                            (단점 : 용량 큰파일 다운로드 받는작업과 같은 오랜시간 작업 시 다른 작업 할수 없음)
+
+                            백그라운드에서 동작
+                            다른 스크립트에 독립적
+                            UI 간섭 없이 task 수행
+
+                            일단 생성되면, worker는 자바스크립트 포스트 메시지로 보낸 코드에 메시지를 보낼 수 있다.
+
+                            웹 페이지가 thread를 나누는 것이 아니라 웹 브라우저에 요청하고
+                            웹브라우저가 thread를 나누어 요청을 완료하면
+                            웹 페이지의 이벤트 큐에 이벤트를 저장
+                            웹 페이지는 현재 실행 중인 단위가 종료되면 대기중인 이벤트를 실행
+                        </aside>
+                    </section>
+
+                    <section>                        
+                        <h2>Use-Cases</h2>
+
+                        <ul>
+                            <li>앞으로 사용할 데이터를 미리 가져오거나 캐싱할 때</li>
+                            <li>실시간 텍스트 포맷팅이나 Code syntax highlighting</li>
+                            <li>스펠링 체커</li>
+                            <li>비디오/오디오 데이터 분석</li>
+                            <li>Background I/O or polling of webservices</li>
+                            <li>거대한 배열이나 json 응답 데이터 처리</li>
+                            <li>&lt;canvas&gt; 내에 이미지 필터링</li>
+                            <li>로컬 웹 데이터베이스 갱신</li>
+                            <li>브라우저 익스텐션 제작</li>
+                        </ul>
+
+                        <aside class="notes">
+                            real-world에서 대표적인 웹 워커 use-case는 다음과 같다.
+                            기본적으로, 메인 UI 쓰레드를 방해할만큼 CPU 계산이 극도로 필요한 경우에는 웹워커를 통해 베네핏을 얻을 수 있다.
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Types of Web Workers</h2> 
+
+                        <br>             
+                        <div class="txl">
+                            <ul>
+                                <li>Dedicated Workers(전용워커) <br>worker를 생성한 페이지서만 백그라운드 프로세스가 응답하는 형태</li>
+                            </ul>          
+                            <br><br>
+                            <ul>
+                                <li>Shared Workers(공유워커) <br>하나의 worker가 여러개 문서에 응답하는 형태</li>
+                            </ul>
+                        </div>
+
+                        <aside class="notes">
+                            dedicated worker는 worker가 처음 생성된 스크립트에서만 접근이 가능하다.
+                            shared worker는 여러 스크립트에서 접근이 가능하다.
+
+
+                            html/js?
+                            전용worker 시
+
+                            HTML
+
+                            var worker = new Worker("worker.js");로 객체생성시 자바스크립트 파일을 전달한 후
+                            worker 객체는 자바스크립트 파일을 내려받아 백그라운드에서 실행
+                            비동기로 데이터공유위해
+                            worker.postMessage(message); message는 문자열 혹은 JSON객체
+
+                            js파일
+
+                            onmessage = function(e){
+                            postMessage("send message : "+e.data);
+                            };로 전달한다.
+
+                            공유worker 시
+
+                            squareNumber.onchange = function() {
+                              myWorker.port.postMessage([squareNumber.value,squareNumber.value]);
+                              console.log('Message posted to worker');
+                            }
+
+                            var worker = new SharedWorker("sharedWorker.js");
+                            onconnect = function(e){
+                                var port = e.ports[0];
+                                port.onmessage = function (event){};
+                                port.postMessage("welcome!"+event.data);
+                            };
+                            worker.port.postMessage(message);
+
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>worker 생성과 시작</h2>
+
+                        <p>
+                            독립 쓰레드에서 실행할 코드블럭을 담은 javascript file을 분리한 뒤, <br>
+                            file URI를 argument로 받아서 Worker object를 생성한다.
+                        </p>
+                        <pre><code>
+    var worker = new Worker('task.js');
+    worker.postMessage(); // Start the worker.
+                        </code></pre>
+
+                        <aside class="notes">
+                            웹 워커는 독립된 쓰레드에서 돌아간다.
+                            따라서 독립 쓰레드에서 실행할 코드블럭을 담은 파일로 분리해야 한다.
+                            파일을 분리하기 전에 먼저 메인 페이지에서 새로운 worker object를 생성한다.
+
+                            명시된 파일이 존재한다면, 브라우저는 파일을 비동기로 다운로드하고 새로운 워커를 생성한다.
+                            워커는 파일이 완전히 다운로드되고 실행되기 전까지는 시작되지 않는다.
+                            명시된 파일이 404 에러를 반환하면, 워커는 fail 한다.
+
+                            워커가 생성되면 postMessage() 메서드를 호출하는 것으로 시작한다.
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Communicating with a Worker</h2>
+                        <p>
+                            부모 페이지와 worker는 event model과 postMessage() 메서드를 통해 통신한다. <br>
+                            postMessage() 메서드는 string이나 JSON object를 single argument로 받는다.
+                        </p>
+                        <pre><em class="file_name">main.js</em><code>
+    var worker = new Worker('doWork.js');
+
+    worker.addEventListener('message', function(e) {
+      console.log('Worker said: ', e.data);
+    }, false);
+
+    worker.postMessage('Hello World'); // Send data to our worker.
+                        </code></pre>
+                        <pre><em class="file_name">doWork.js (the worker)</em><code>
+    self.addEventListener('message', function(e) {
+      self.postMessage(e.data);
+    }, false);
+                        </code></pre>
+                        <p><a href="https://codepen.io/kschoi/project/editor/XkbPgW" target="_blank">DEMO</a></p>
+
+                        <aside class="notes">
+                            메시지 data는 Main Thread와 workers 사이에서 messgaes 시스템을 통해 송신된다. 
+                            postMessage()가 부모 페이지에서 호출되면, 워커는 message 이벤트의 onmessage 핸들러로 넘겨받은 메시지 data를 처리한다.
+                            보내진 메시지는 Event.data로 접근 가능하다.
+                            이 예제는 단순하지만, postMessage()가 메인 페이지에서 워커로 data를 보낼 때 뿐만 아니라, 메인 쓰레드로 메시지 data를 보낼 때도 똑같이 사용된다는 것을 보여준다.
+                            양쪽에서 모두 postMessage() 메서드를 사용하여 보내지고, onmessage 이벤트 핸들러를 통해 data를 응답받는다.
+                        </aside>
+                    </section>
+
+                    <section>
+                        <p>
+                            onmessage 이벤트를 직접 정의해도 된다. (addEventListener를 권장)
+                        </p>
+                        <pre><code>
+    onmessage = function(e) {
+      var data = e.data;
+      ...
+    };
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h2>copied, not shared</h2>
+                        <p>
+                            메시지 data는 양쪽에서 공유되는 것이 아니라 복제된다. <br>
+                            따라서 postMessage()가 분리되서 실행되더라도, <br>
+                            전용 공간(dedicated space)의 쓰레드에서 serializinge된다. <br>
+                            그리고 워커가 종료되는 시점에서 de-serializing 된다.
+                        </p>
+                        <p><a href="https://codepen.io/kschoi/project/editor/XkbPgW" target="_blank">DEMO</a></p>
+                        <aside class="notes">
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>worker 종료</h2>
+
+                        <pre><em class="file_name">main</em><code>
+    worker.terminate() // from the main page
+                        </code></pre>
+                        <pre><em class="file_name">worker</em><code>
+    self.close() // inside of the worker itself
+                        </code></pre>
+                        <aside class="notes">
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Transferrable objects</h2>
+                        <p>
+                            zero-copy 기반으로 하나의 context에서 다른쪽으로 data를 이송할 수 있다. <br>
+                            예를 들어, ArrayBuffer를 메인 앱에서 워커로 전송하면 <br>
+                            original ArrayBuffer는 삭제되고, sending side에서는 더이상 사용 불가능하다.
+                        </p>
+                        <pre><em class="file_name">usage</em><code>
+    worker.postMessage(message, [transfer]);
+                        </code></pre>
+                        <pre><em class="file_name">example</em><code>
+    worker.postMessage(arrayBuffer, [arrayBuffer]);
+    window.postMessage(arrayBuffer, targetOrigin, [arrayBuffer]);
+    worker.postMessage({
+        data: int8View, 
+        moreData: anotherBuffer
+    }, [int8View.buffer, anotherBuffer]);
+                        </code></pre>
+
+                        <ul>
+                            <li>arguments[0] : data</li>
+                            <li>arguments[1] : array (the list of items that should be transferred)</li>
+                        </ul>
+                        <p><a href="http://html5-demos.appspot.com/static/workers/transferables/index.html" target="_blank">DEMO</a></p>
+                        <aside class="notes">
+                            브라우저는 워커에서 File, Blob, ArrayBuffer, JSON object같은 보다 복잡한 타입의 in/out을 허용합니다.
+                            File, Blob, ArrayBuffer, JSON object를 워커와 주고 받는다고 생각해보자.
+                            이러한 타입들이 워커에 패싱될때도, 복제가 됩니다.
+                            예를 들어 50MB가 넘는 큰 파일을 워커에 패싱한다고 할때 현저한 속도저하를 인지할 수 있습니다.
+
+                            structured cloning 알고리즘이 훌륭하다고 하더라도, 
+                            복제 작업이 상당한 시간을 소요하기 때문에,
+                            Transferrable objects를 사용하면, worker에 data를 전송할 때 상당한 퍼포먼스 향상효과를 가져옴
+                        </aside>
+                    </section>
+
+                </section>
+
+                <section>
+                    <section>
+                        <h2>The Worker Environment</h2>
+                    </section>
+
+                    <section>
+                        <h2>Worker Scope</h2>
+
+                        <p>
+                            worker는 현재의 window 객체와 별개인 전역 컨텍스트에서 동작한다. <br>
+                            따라서 현재의 전역 스코프에 접근하기 위해 self 대신 window 객체를 사용한다면, worker는 에러를 반환한다.
+                        </p>
+                        <p>
+                            worker 내에서는 <span class="point">self</span>와 <span class="point">this</span> 모두 global scope를 참조한다.
+                        </p>
+
+                        <aside class="notes">
+                            전역스코프 접근
+                            dedicated workers(전용워커) : DedicatedWorkerGlobalScope 객체
+                            shared workers(공유워커) : SharedWorkerGlobalScope 객체
+                        </aside>
+
+                    </section>
+
+                    <section>
+                        <h2>Features Available to Workers</h2>
+
+                        <div class="txl">
+                        <p>
+                            다중 쓰레드 방식 때문에, <br>
+                            worker에서는 JavaScript's features 중 일부만 접근 가능하다.
+                        </p>
+                        <ul>
+                            <li>The navigator object</li>
+                            <li>The location object (read-only)</li>
+                            <li>XMLHttpRequest</li>
+                            <li>setTimeout()/clearTimeout() and setInterval()/clearInterval()</li>
+                            <li>The Application Cache</li>
+                            <li>Importing external scripts using the importScripts() method</li>
+                            <li>Spawning other web workers</li>
+                        </ul>
+                        <p><span class="point">[워커에서 접근 불가능한 것들]</span></p>
+                        <ul>
+                            <li>The DOM (it's not thread-safe)</li>
+                            <li>The window object</li>
+                            <li>The document object</li>
+                            <li>The parent object</li>
+                        </ul>
+                        <p><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Functions_and_classes_available_to_workers" target="_blank">Functions and classes available to Web Workers</a></p>
+                        </div>                   
+
+                        <aside class="notes">
+                            worker thread에서는 몇가지 예외사항을 제외하고 원하는 모든 코드를 구동할 수 있다.
+                            - worker 안쪽에서 DOM을 직접적으로 처리할 수 없다
+                            - window 객체의 기본 메서드와 프로퍼티 중 일부를 사용 할 수 없다.
+
+                            하지만 WebSockets, IndexedDB을 포함한 window 객체의 수많은 하위 객체들을 사용할 수 있다.
+                            
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Loading External Scripts</h2>
+
+                        <p>external script 또는 Libraries를 로드하기 위해 importScripts() 사용</p>
+                        <pre><code>
+    importScripts('script1.js');
+    importScripts('script2.js');
+    importScripts('script1.js', 'script2.js');
+                        </code></pre>
+
+                        <aside class="notes">
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Subworkers</h2>
+
+                        <p>worker는 child worker를 생성할 수 있다.</p>
+                        <div class="txl">
+                        <p><span class="point">[제약사항]</span></p>
+                        <ul>
+                            <li>Subworkers는 부모 페이지와 same origin에 호스팅 되어야 한다.</li>
+                            <li>Subworkers 내 URI는 parent workers의 상대위치 기준에 맞아야 한다.</li>
+                        </ul>
+                        </div>
+
+                        <aside class="notes">
+                            큰 task를 런타임 시에 분해하기에 유용
+                            same origin이라는 전제하에
+                            또한 너무 많은 Subworkers를 생성함으로서 사용자 시스템 리소스를 너무 많이 잡아먹지 않도록 유의해야 한다.
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Inline Workers</h2>
+                        <p>Blob object를 생성 한 뒤 window.URL.createObjectURL()을 통해 URL string을 추출한다.
+Blob URL은 유니크하며 document가 닫힐 때까지 지속된다.</p>
+                        <pre><code>
+    var blob = new Blob([
+    "onmessage = function(e) { postMessage('msg from worker'); }"]);
+
+    // Obtain a blob URL reference to our worker 'file'.
+    var blobURL = window.URL.createObjectURL(blob);
+
+    var worker = new Worker(blobURL);
+    worker.onmessage = function(e) {
+      // e.data == 'msg from worker'
+    };
+    worker.postMessage(); // Start the worker.
+                        </code></pre>
+                        <p><a href="https://www.html5rocks.com/en/tutorials/workers/basics/#toc-inlineworkers-loadingscripts" target="_blank">Inline Workers 내 External Scripts를 로딩할 때 상대경로 이슈</a></p>
+
+                        <aside class="notes">
+                            importScripts()에서 상대경로를 시도하면, 브라우저는 보안 에러를 표시한다.
+                            blob URL은 환경에 따라 resolve되기 때문에, 크로스 오리진 제한으로 인해 failure가 발생한다.
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Handling Errors</h2>
+
+                        <p>ErrorEvent의 3가지 프로퍼티 활용하여 에러 캐치</p>
+                        <ul>
+                        <li>e.filename : 에러가 발생된 worker script 파일명</li>
+                        <li>e.lineno : 에러가 발생된 라인 넘버</li>
+                        <li>e.message : 에러 디스크립션</li>
+                        </ul>
+                        <pre><code>
+    function onError(e) {
+        document.getElementById('error').textContent = [
+            'ERROR: Line ', e.lineno, ' in ', e.filename, ': ', e.message
+        ].join('');
+    }
+    worker.addEventListener('error', onError, false);
+                        </code></pre>
+
+                        <aside class="notes">
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Check Web Worker Support</h2>
+
+                        <pre><code>
+    // Check Web Worker Support
+    if (typeof(Worker) !== "undefined") {
+        // Yes! Web worker support!
+        // Some code.....
+    } else {
+        // Sorry! No Web Worker support..
+    }
+                        </code></pre>
+
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                </section>
+
+                <section>
+
+                    <section>
+                        <h2>DEMO</h2>
+
+                        <p><a href="http://svn.ssgadm.com/ssgui/ssg-ui/temporary/cks/worker/example/index.html" target="_blank">image filtering without worker</a></p>
+                        <p>VS</p>
+                        <p><a href="http://svn.ssgadm.com/ssgui/ssg-ui/temporary/cks/worker/example/index-worker.html" target="_blank">image filtering with worker</a></p>
+
+                        <aside class="notes">
+                            https://github.com/udacity/web-workers-demo/blob/master/index.html
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>references</h2>
+
+                        <ul>
+                            <li><a href="https://www.html5rocks.com/en/tutorials/workers/basics/" target="_blank">The Basics of Web Workers</a></li>
+                            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers" target="_blank">MDN web docs : Using Web Workers</a></li>
+                            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API" target="_blank">Web Workers API</a></li>
+                        </ul>
+                        <aside class="notes">
+web content to run scripts in background threads
+
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h1>감사합니다.</h1>
+                    </section>
+
+                </section>
+
+            </div>
+
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+        <script>
+            // Full list of configuration options available at:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+
+                transition: 'convex', // none/fade/slide/convex/concave/zoom
+
+                // Optional reveal.js plugins
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true },
+                    { src: 'plugin/notes/notes.js', async: true }
+                ]
+            });
+
+            Reveal.addEventListener( 'slidechanged', function(event) {
+                // event.previousSlide, event.currentSlide, event.indexh, event.indexv
+                var notes = event.currentSlide.querySelector(".notes");
+                if(notes) {
+                    console.info(notes.innerHTML.replace(/\n\s+/g,'\n'));
+                }
+            });
+        </script>
+    </body>
+</html>
+
+<!--  etc
+
+[example]
+
+var myWorker = new Worker('worker.js');
+
+first.onchange = function() {
+  myWorker.postMessage([first.value,second.value]);
+  console.log('Message posted to worker');
+}
+
+myWorker.onmessage = function(e) {
+  result.textContent = e.data;
+  console.log('Message received from worker');
+
+
+  
+var w;
+
+function startWorker() {
+    if(typeof(Worker) !== "undefined") {
+        if(typeof(w) == "undefined") {
+            w = new Worker("demo_workers.js");
+        }
+        w.onmessage = function(event) {
+            document.getElementById("result").innerHTML = event.data;
+        };
+    } else {
+        document.getElementById("result").innerHTML = "Sorry, your browser does not support Web Workers...";
+    }
+}
+
+function stopWorker() { 
+    w.terminate();
+    w = undefined;
+} -->
