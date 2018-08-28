@@ -191,12 +191,9 @@
                             postMessage() 메서드는 string이나 JSON object를 single argument로 받는다.
                         </p>
                         <pre><em class="file_name">main.js</em><code>
-    var worker = new Worker('doWork.js');
-
     worker.addEventListener('message', function(e) {
       console.log('Worker said: ', e.data);
     }, false);
-
     worker.postMessage('Hello World'); // Send data to our worker.
                         </code></pre>
                         <pre><em class="file_name">doWork.js (the worker)</em><code>
@@ -217,7 +214,7 @@
 
                     <section>
                         <p>
-                            onmessage 이벤트를 직접 정의해도 된다. (addEventListener를 권장)
+                            물론, onmessage 이벤트를 직접 정의해도 된다. (addEventListener를 권장)
                         </p>
                         <pre><code>
     onmessage = function(e) {
@@ -256,26 +253,19 @@
                     <section>
                         <h2>Transferrable objects</h2>
                         <p>
-                            zero-copy 기반으로 하나의 context에서 다른쪽으로 data를 이송할 수 있다. <br>
-                            예를 들어, ArrayBuffer를 메인 앱에서 워커로 전송하면 <br>
-                            original ArrayBuffer는 삭제되고, sending side에서는 더이상 사용 불가능하다.
+                            zero-copy 방식의 메시지 전송
                         </p>
-                        <pre><em class="file_name">usage</em><code>
-    worker.postMessage(message, [transfer]);
-                        </code></pre>
-                        <pre><em class="file_name">example</em><code>
-    worker.postMessage(arrayBuffer, [arrayBuffer]);
-    window.postMessage(arrayBuffer, targetOrigin, [arrayBuffer]);
-    worker.postMessage({
-        data: int8View, 
-        moreData: anotherBuffer
-    }, [int8View.buffer, anotherBuffer]);
-                        </code></pre>
-
                         <ul>
                             <li>arguments[0] : data</li>
                             <li>arguments[1] : array (the list of items that should be transferred)</li>
                         </ul>
+                        <pre><code>
+    worker.postMessage(message, [transfer]);
+
+    worker.postMessage(arrayBuffer, [arrayBuffer]);
+    worker.postMessage({ data: int8View, moreData: anotherBuffer}, 
+        [int8View.buffer, anotherBuffer]);
+                        </code></pre>
                         <p><a href="http://html5-demos.appspot.com/static/workers/transferables/index.html" target="_blank">DEMO</a></p>
                         <aside class="notes">
                             브라우저는 워커에서 File, Blob, ArrayBuffer, JSON object같은 보다 복잡한 타입의 in/out을 허용합니다.
@@ -320,8 +310,7 @@
 
                         <div class="txl">
                         <p>
-                            다중 쓰레드 방식 때문에, <br>
-                            worker에서는 JavaScript's features 중 일부만 접근 가능하다.
+                            다중 쓰레드 방식으로 인해, worker에서는 JavaScript's features 중 일부만 접근 가능하다.
                         </p>
                         <ul>
                             <li>The navigator object</li>
